@@ -1,0 +1,361 @@
+---
+title: "La poule qui chante"
+author: "GIANNESINI Baptiste"
+date: "12/11/2021"
+output:
+  html_document:
+    df_print: default
+    theme: readable
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+![](https://user.oc-static.com/upload/2020/11/24/16062164030098_image2.png)
+
+# Résumé de la mission:
+
+La poule qui chante, entreprise française d'agroalimentaire nous consulte pour déterminer un plan d'internationalisation de ses ventes.
+
+![](https://c.tenor.com/8zExTwQXh-MAAAAC/kaamelott-kadoc.gif)
+
+```{r setup, include=FALSE}
+
+# Import des packages
+
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message = FALSE)
+
+library(tidyverse)
+library(ineq)
+library(scales)
+library(rAmCharts)
+library(kableExtra)
+library(crosstable)
+library(gmodels)
+library(FactoMineR)
+library(factoextra)
+library(corrplot)
+library(reshape2)
+
+
+# Import des données
+
+dispo_alim = read.csv("DisponibiliteAlimentaire_2017.csv", sep=",", fileEncoding="UTF-8-BOM")
+population = read.csv("Population_2000_2018.csv", sep=",", fileEncoding="UTF-8-BOM")
+pib = read.csv("PIB.csv", sep=",", fileEncoding="UTF-8-BOM")
+iso = read.csv("iso_def.csv", sep=",", fileEncoding = "UTF-8-BOM", na.strings = "?")
+```
+
+```{r}
+
+# Mise en forme
+
+# récupération population 2017
+
+pop_2017 <- population %>%
+  mutate(nb_habitant2017 = Valeur *1000)%>%
+  filter(Annee == 2017) %>%
+  select(Zone, nb_habitant2017)
+
+# récupération population 2012
+
+pop_2012 <- population %>%
+  mutate(nb_habitant2012 = Valeur *1000)%>%
+  filter(Annee == 2012) %>%
+  select(Zone, nb_habitant2012)
+
+# jointure et calcul variation de population 5 ans
+
+pop <- merge(pop_2017, pop_2012, on=Zone)%>%
+  mutate(variation_pop = ((nb_habitant2017-nb_habitant2012)/nb_habitant2012)*100) %>%
+  select(Zone, nb_habitant2017, variation_pop)
+
+# mise en forme pib/habitant en $
+
+pib <- pib %>%
+  mutate(pib_hab = Valeur)%>%
+  select(Zone, pib_hab)
+
+# Récupération dispo alimentaire total en Kcal/habitant
+
+dispo_tot_kcal <- dispo_alim %>%
+  group_by(Zone)%>%
+  filter(Element == "Disponibilité alimentaire (Kcal/personne/jour)")%>%
+  summarize(Disponibilite_totale = sum(Valeur))
+
+# récupération total de protéines toutes origines en g/jour/habitant
+
+total_prot <- dispo_alim %>%
+  group_by(Zone)%>%
+  filter(Element=="Disponibilité de protéines en quantité (g/personne/jour)")%>%
+  summarize(Dispo_proteines_total = sum(Valeur))
+
+# récupération total de protéines toutes origines animales
+
+animal_prot = dispo_alim %>%
+  group_by(Zone)%>%
+  filter(Element=="Disponibilité de protéines en quantité (g/personne/jour)" & Produit %in% c(
+    "Viande de Bovins", 
+    "Viande d'Ovins/Caprins", 
+    "Viande de Suides", 
+    "Viande de Volailles", 
+    "Viande, Autre", 
+    "Abats Comestible", 
+    "Oeufs"))%>%
+  summarize(Dispo_proteines_animal = sum(Valeur))
+
+# Calcul part animale dans le total prot
+
+prot <- merge(total_prot, animal_prot, on=Zone)%>%
+  mutate(ratio_animal_prot = round(Dispo_proteines_animal/Dispo_proteines_total, digits=2))%>%
+  select(-Dispo_proteines_animal, Dispo_proteines_total)
+
+# Disponibilité intérieure volaille
+
+V_dispo_int = dispo_alim %>%
+  group_by(Zone)%>%
+  filter(Element=="Disponibilité intérieure" & Produit == "Viande de Volailles")%>%
+  summarize(Dispo_interieur_Vol = sum(Valeur))
+
+# Production Volaille
+
+V_prod = dispo_alim %>%
+  group_by(Zone)%>%
+  filter(Element =="Production" & Produit == "Viande de Volailles")%>%
+  summarize(v_production = sum(Valeur))
+
+
+
+# Importation Volaille
+
+V_import <- dispo_alim %>%
+  group_by(Zone)%>%
+  filter(Element=="Importations - Quantité" & Produit == "Viande de Volailles")%>%
+  summarize(v_importations = sum(Valeur))
+
+
+
+# Exportation Volaille
+
+V_export = dispo_alim %>%
+  group_by(Zone)%>%
+  filter(Element=="Exportations - Quantité" & Produit == "Viande de Volailles")%>%
+  summarize(v_exportation = sum(Valeur))
+
+
+# récupération et calcul de données spécifiques à la volaille
+dispo_volaille <- merge(V_prod, V_import, on=Zone, all=TRUE)
+
+
+dispo_volaille <- merge(dispo_volaille, V_export, on=Zone, all = TRUE) %>%
+  replace(is.na(.),0) %>%
+  mutate(v_dispo_int = (v_production+(v_importations-v_exportation)), 
+         dep_import=(v_importations/v_dispo_int), 
+         auto_suffi = (v_production/v_dispo_int))
+  
+
+
+continent <- iso %>%
+  mutate(Zone=nom_fr)%>%
+  select(Zone, Continent)
+
+
+
+```
+
+```{r}
+
+
+```
+
+
+
+
+```{r}
+data <- merge(pop, pib, on=Zone)
+data <- merge(data, dispo_tot_kcal, on= Zone)
+data <- merge(data, prot, on=Zone, all=TRUE)
+data <- merge(data, dispo_volaille, on=Zone, all=TRUE)
+data <- data%>% drop_na()
+data
+```
+
+```{r}
+data$Zone=ifelse(data$Zone=="Arabie saoudite","Arabie Saoudite",data$Zone)
+data$Zone=ifelse(data$Zone=="Bolivie (État plurinational de)","Bolivie",data$Zone)
+data$Zone=ifelse(data$Zone=="Cabo Verde","Cap-vert",data$Zone)
+data$Zone=ifelse(data$Zone=="Chine - RAS de Hong-Kong","Hong-Kong",data$Zone)
+data$Zone=ifelse(data$Zone=="Chine - RAS de Macao","Macao",data$Zone)
+data$Zone=ifelse(data$Zone=="Chine, continentale","Chine",data$Zone)
+data$Zone=ifelse(data$Zone=="Chine, Taiwan Province de","Taïwan",data$Zone)
+data$Zone=ifelse(data$Zone=="Congo","République du Congo",data$Zone)
+data$Zone=ifelse(data$Zone=="Émirats arabes unis","Émirats Arabes Unis",data$Zone)
+data$Zone=ifelse(data$Zone=="Eswatini","Swaziland",data$Zone)
+data$Zone=ifelse(data$Zone=="États-Unis d'Amérique","États-Unis",data$Zone)
+data$Zone=ifelse(data$Zone=="Iran (République islamique d')","République Islamique d'Iran",data$Zone)
+data$Zone=ifelse(data$Zone=="Macédoine du Nord","L'ex-République Yougoslave de Macédoine",data$Zone)
+data$Zone=ifelse(data$Zone=="Monténégro","Monténégro",data$Zone)
+data$Zone=ifelse(data$Zone=="Polynésie française","Polynésie Française",data$Zone)
+data$Zone=ifelse(data$Zone=="République centrafricaine","République Centrafricaine",data$Zone)
+data$Zone=ifelse(data$Zone=="République démocratique populaire lao","République Démocratique Populaire Lao",data$Zone)
+data$Zone=ifelse(data$Zone=="République dominicaine","République Dominicaine",data$Zone)
+data$Zone=ifelse(data$Zone=="République populaire démocratique de Corée","République Populaire Démocratique de Corée",data$Zone)
+data$Zone=ifelse(data$Zone=="Royaume-Uni de Grande-Bretagne et d'Irlande du Nord","Royaume-Uni",data$Zone)
+data$Zone=ifelse(data$Zone=="Serbie","République de Serbie",data$Zone)
+data$Zone=ifelse(data$Zone=="Tchéquie","République Tchèque",data$Zone)
+data$Zone=ifelse(data$Zone=="Venezuela (République bolivarienne du)","Venezuela",data$Zone)
+```
+
+
+```{r}
+data <- merge(data, continent, on=Zone, all.x =TRUE)
+```
+
+```{r}
+# Contrôles
+data %>%
+  filter(is.na(Continent))%>%
+  summarize(Zone, Continent)
+
+
+
+```
+
+
+```{r}
+data_reduit = data %>%
+  filter(!(Zone %in% c("Brésil", "Chine", "États-Unis", "Inde")))
+
+
+# Contrôles
+data_reduit%>%
+  group_by(Continent)%>%
+  summarize(test=n_distinct(Continent))
+  
+data_reduit%>%
+  filter(Continent=="")
+
+data_reduit 
+```
+
+```{r}
+cormat <- round(cor(data_reduit[,2:12]),2)
+#head(cormat)
+
+# Obtenir le triangle inférieur
+get_lower_tri<-function(cormat){
+  cormat[upper.tri(cormat)] <- NA
+  return(cormat)
+}
+
+lower <- get_lower_tri(cormat)
+melted_cormat <- melt(lower)
+#head(melted_cormat)
+
+ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value))+
+  
+  geom_tile()+
+    scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+   midpoint = 0, limit = c(-1,1), space = "Lab",
+   name="Pearson\nCorrelation") +
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+    size = 8, hjust = 1))+
+  
+  geom_text(aes(Var2, Var1, label = value), color = "black", size = 4)
+  
+```
+
+```{r}
+
+
+
+res.pca <- PCA(data_reduit[ ,2:13],scale.unit = TRUE, graph=FALSE)
+#res.pca <- prcomp(t(data_reduit[,2:12]), center=TRUE, scale. = TRUE)
+
+print(res.pca)
+var <- get_pca_var(res.pca)
+```
+```{r}
+fviz_eig(res.pca, addlabels=TRUE, ylim=c(0,40))
+```
+
+```{r}
+fviz_pca_var(res.pca, col.var = "cos2", gradient.cols=c("#00AFBB", "#E7B800", "#FC4E07"), repel=TRUE)
+
+# Dim 1 : quantité volaille
+# Dim 2 : population/richesse
+```
+
+```{r}
+corrplot(var$cos2, is.corr=FALSE)
+```
+
+```{r}
+# Contributions des variables à PC1
+fviz_contrib(res.pca, choice = "var", axes = 1, top = 10)
+# Contributions des variables à PC2
+fviz_contrib(res.pca, choice = "var", axes = 2, top = 10)
+# Contributions totales à PC1 et PC2
+fviz_cos2(res.pca, choice="var", axes= 1:2)
+
+```
+
+```{r}
+fviz_pca_ind (res.pca, col.ind = "cos2",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE # Évite le chevauchement de texte
+             )
+```
+
+```{r}
+fviz_pca_ind (res.pca, pointsize = "cos2",
+             pointshape = 21, fill = "#E7B800",
+             repel = TRUE # Évite le chevauchement de texte
+             )
+```
+```{r}
+fviz_pca_ind(res.pca,
+             label = "none", # Caché le texte des individus
+             col.ind = data_reduit$Continent, # colorer par groupes
+             addEllipses =TRUE,# Ellipses de concentration
+             mean.point =FALSE,
+             palette = "uchicago"
+             
+             
+             )
+```
+```{r}
+fviz_pca_biplot(res.pca, repel = TRUE,
+                col.var = "black", # Couleur des variables
+                col.ind = data_reduit$Continent, # Couleur des individus en fonction du continent
+                palette="uchicago",
+                addEllipses = TRUE, 
+                #ellipse.type="confidence",
+                mean=FALSE
+                )
+```
+```{r}
+res.hcpc <- HCPC(res.pca, nb.clust=5, order=TRUE,method="ward", graph=FALSE)
+```
+
+```{r}
+fviz_dend(res.hcpc,
+          cex=0.9,
+          palette="uchicago",
+          rect=TRUE, rect_fill=TRUE,
+          rect_border = "uchicago",
+          labels_track_height = 0.8
+          )
+```
+
+```{r}
+fviz_cluster(res.hcpc,
+             repel=TRUE,
+             show.clust.cent = TRUE,
+             palette="uchicago",
+             
+             main="Factor map")
+```
+```{r}
+plot(res.hcpc, choice="3d.map")
+```

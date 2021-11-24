@@ -1,0 +1,241 @@
+id,code,,alpha-2,alpha-3,nom_fr,nom_gb,Continent
+0,1,4,AF,AFG,Afghanistan,Afghanistan,AS
+1,2,8,AL,ALB,Albanie,Albania,EU
+2,3,10,AQ,ATA,Antarctique,Antarctica,AN
+3,4,12,DZ,DZA,Algérie,Algeria,AF
+4,5,16,AS,ASM,Samoa Américaines,American Samoa,OC
+5,6,20,AD,AND,Andorre,Andorra,EU
+6,7,24,AO,AGO,Angola,Angola,AF
+7,8,28,AG,ATG,Antigua-et-Barbuda,Antigua and Barbuda,NA
+8,9,31,AZ,AZE,Azerbaïdjan,Azerbaijan,AS
+9,10,32,AR,ARG,Argentine,Argentina,SA
+10,11,36,AU,AUS,Australie,Australia,OC
+11,12,40,AT,AUT,Autriche,Austria,EU
+12,13,44,BS,BHS,Bahamas,Bahamas,NA
+13,14,48,BH,BHR,Bahreïn,Bahrain,AS
+14,15,50,BD,BGD,Bangladesh,Bangladesh,AS
+15,16,51,AM,ARM,Arménie,Armenia,AS
+16,17,52,BB,BRB,Barbade,Barbados,NA
+17,18,56,BE,BEL,Belgique,Belgium,EU
+18,19,60,BM,BMU,Bermudes,Bermuda,NA
+19,20,64,BT,BTN,Bhoutan,Bhutan,AS
+20,21,68,BO,BOL,Bolivie,Bolivia,SA
+21,22,70,BA,BIH,Bosnie-Herzégovine,Bosnia and Herzegovina,EU
+22,23,72,BW,BWA,Botswana,Botswana,AF
+23,24,74,BV,BVT,Île Bouvet,Bouvet Island,AN
+24,25,76,BR,BRA,Brésil,Brazil,SA
+25,26,84,BZ,BLZ,Belize,Belize,NA
+26,27,86,IO,IOT,Territoire Britannique de l'Océan Indien,British Indian Ocean Territory,AS
+27,28,90,SB,SLB,Îles Salomon,Solomon Islands,OC
+28,29,92,VG,VGB,Îles Vierges Britanniques,British Virgin Islands,NA
+29,30,96,BN,BRN,Brunéi Darussalam,Brunei Darussalam,AS
+30,31,100,BG,BGR,Bulgarie,Bulgaria,EU
+31,32,104,MM,MMR,Myanmar,Myanmar,AS
+32,33,108,BI,BDI,Burundi,Burundi,AF
+33,34,112,BY,BLR,Bélarus,Belarus,EU
+34,35,116,KH,KHM,Cambodge,Cambodia,AS
+35,36,120,CM,CMR,Cameroun,Cameroon,AF
+36,37,124,CA,CAN,Canada,Canada,NA
+37,38,132,CV,CPV,Cap-vert,Cape Verde,AF
+38,39,136,KY,CYM,Îles Caïmanes,Cayman Islands,NA
+39,40,140,CF,CAF,République Centrafricaine,Central African,AF
+40,41,144,LK,LKA,Sri Lanka,Sri Lanka,AS
+41,42,148,TD,TCD,Tchad,Chad,AF
+42,43,152,CL,CHL,Chili,Chile,SA
+43,44,156,CN,CHN,Chine,China,AS
+44,45,158,TW,TWN,Taïwan,Taiwan,AS
+45,46,162,CX,CXR,Île Christmas,Christmas Island,OC
+46,47,166,CC,CCK,Îles Cocos (Keeling),Cocos (Keeling) Islands,AS
+47,48,170,CO,COL,Colombie,Colombia,SA
+48,49,174,KM,COM,Comores,Comoros,AF
+49,50,175,YT,MYT,Mayotte,Mayotte,AF
+50,51,178,CG,COG,République du Congo,Republic of the Congo,AF
+51,52,180,CD,COD,République Démocratique du Congo,The Democratic Republic Of The Congo,AF
+52,53,184,CK,COK,Îles Cook,Cook Islands,OC
+53,54,188,CR,CRI,Costa Rica,Costa Rica,NA
+54,55,191,HR,HRV,Croatie,Croatia,EU
+55,56,192,CU,CUB,Cuba,Cuba,NA
+56,57,196,CY,CYP,Chypre,Cyprus,EU
+57,58,203,CZ,CZE,République Tchèque,Czech Republic,EU
+58,59,204,BJ,BEN,Bénin,Benin,AF
+59,60,208,DK,DNK,Danemark,Denmark,EU
+60,61,212,DM,DMA,Dominique,Dominica,NA
+61,62,214,DO,DOM,République Dominicaine,Dominican Republic,
+62,63,218,EC,ECU,Équateur,Ecuador,SA
+63,64,222,SV,SLV,El Salvador,El Salvador,NA
+64,65,226,GQ,GNQ,Guinée Équatoriale,Equatorial Guinea,AF
+65,66,231,ET,ETH,Éthiopie,Ethiopia,AF
+66,67,232,ER,ERI,Érythrée,Eritrea,AF
+67,68,233,EE,EST,Estonie,Estonia,EU
+68,69,234,FO,FRO,Îles Féroé,Faroe Islands,EU
+69,70,238,FK,FLK,Îles (malvinas) Falkland,Falkland Islands,SA
+70,71,239,GS,SGS,Géorgie du Sud et les Îles Sandwich du Sud,South Georgia and the South Sandwich Islands,AN
+71,72,242,FJ,FJI,Fidji,Fiji,OC
+72,73,246,FI,FIN,Finlande,Finland,EU
+73,74,248,AX,ALA,Îles Åland,Åland Islands,EU
+74,75,250,FR,FRA,France,France,EU
+75,76,254,GF,GUF,Guyane Française,French Guiana,SA
+76,77,258,PF,PYF,Polynésie Française,French Polynesia,OC
+77,78,260,TF,ATF,Terres Australes Françaises,French Southern Territories,AN
+78,79,262,DJ,DJI,Djibouti,Djibouti,AF
+79,80,266,GA,GAB,Gabon,Gabon,AF
+80,81,268,GE,GEO,Géorgie,Georgia,AS
+81,82,270,GM,GMB,Gambie,Gambia,AF
+82,83,275,PS,PSE,Territoire Palestinien Occupé,Occupied Palestinian Territory,AS
+83,84,276,DE,DEU,Allemagne,Germany,EU
+84,85,288,GH,GHA,Ghana,Ghana,AF
+85,86,292,GI,GIB,Gibraltar,Gibraltar,EU
+86,87,296,KI,KIR,Kiribati,Kiribati,OC
+87,88,300,GR,GRC,Grèce,Greece,EU
+88,89,304,GL,GRL,Groenland,Greenland,NA
+89,90,308,GD,GRD,Grenade,Grenada,NA
+90,91,312,GP,GLP,Guadeloupe,Guadeloupe,NA
+91,92,316,GU,GUM,Guam,Guam,OC
+92,93,320,GT,GTM,Guatemala,Guatemala,NA
+93,94,324,GN,GIN,Guinée,Guinea,AF
+94,95,328,GY,GUY,Guyana,Guyana,SA
+95,96,332,HT,HTI,Haïti,Haiti,NA
+96,97,334,HM,HMD,Îles Heard et Mcdonald,Heard Island and McDonald Islands,AN
+97,98,336,VA,VAT,Saint-Siège (état de la Cité du Vatican),Vatican City State,EU
+98,99,340,HN,HND,Honduras,Honduras,NA
+99,100,344,HK,HKG,Hong-Kong,Hong Kong,AS
+100,101,348,HU,HUN,Hongrie,Hungary,EU
+101,102,352,IS,ISL,Islande,Iceland,EU
+102,103,356,IN,IND,Inde,India,AS
+103,104,360,ID,IDN,Indonésie,Indonesia,AS
+104,105,364,IR,IRN,République Islamique d'Iran,Islamic Republic of Iran,AS
+105,106,368,IQ,IRQ,Iraq,Iraq,AS
+106,107,372,IE,IRL,Irlande,Ireland,EU
+107,108,376,IL,ISR,Israël,Israel,AS
+108,109,380,IT,ITA,Italie,Italy,EU
+109,110,384,CI,CIV,Côte d'Ivoire,Côte d'Ivoire,AF
+110,111,388,JM,JAM,Jamaïque,Jamaica,NA
+111,112,392,JP,JPN,Japon,Japan,AS
+112,113,398,KZ,KAZ,Kazakhstan,Kazakhstan,AS
+113,114,400,JO,JOR,Jordanie,Jordan,AS
+114,115,404,KE,KEN,Kenya,Kenya,AF
+115,116,408,KP,PRK,République Populaire Démocratique de Corée,Democratic People's Republic of Korea,AS
+116,117,410,KR,KOR,République de Corée,Republic of Korea,AS
+117,118,414,KW,KWT,Koweït,Kuwait,AS
+118,119,417,KG,KGZ,Kirghizistan,Kyrgyzstan,AS
+119,120,418,LA,LAO,République Démocratique Populaire Lao,Lao People's Democratic Republic,AS
+120,121,422,LB,LBN,Liban,Lebanon,AS
+121,122,426,LS,LSO,Lesotho,Lesotho,AF
+122,123,428,LV,LVA,Lettonie,Latvia,EU
+123,124,430,LR,LBR,Libéria,Liberia,AF
+124,125,434,LY,LBY,Jamahiriya Arabe Libyenne,Libyan Arab Jamahiriya,AF
+125,126,438,LI,LIE,Liechtenstein,Liechtenstein,EU
+126,127,440,LT,LTU,Lituanie,Lithuania,EU
+127,128,442,LU,LUX,Luxembourg,Luxembourg,EU
+128,129,446,MO,MAC,Macao,Macao,AS
+129,130,450,MG,MDG,Madagascar,Madagascar,AF
+130,131,454,MW,MWI,Malawi,Malawi,AF
+131,132,458,MY,MYS,Malaisie,Malaysia,AS
+132,133,462,MV,MDV,Maldives,Maldives,AS
+133,134,466,ML,MLI,Mali,Mali,AF
+134,135,470,MT,MLT,Malte,Malta,EU
+135,136,474,MQ,MTQ,Martinique,Martinique,NA
+136,137,478,MR,MRT,Mauritanie,Mauritania,AF
+137,138,480,MU,MUS,Maurice,Mauritius,AF
+138,139,484,MX,MEX,Mexique,Mexico,NA
+139,140,492,MC,MCO,Monaco,Monaco,EU
+140,141,496,MN,MNG,Mongolie,Mongolia,AS
+141,142,498,MD,MDA,République de Moldova,Republic of Moldova,EU
+142,143,500,MS,MSR,Montserrat,Montserrat,NA
+143,144,504,MA,MAR,Maroc,Morocco,AF
+144,145,508,MZ,MOZ,Mozambique,Mozambique,AF
+145,146,512,OM,OMN,Oman,Oman,AS
+146,147,516,,NAM,Namibie,Namibia,AF
+147,148,520,NR,NRU,Nauru,Nauru,OC
+148,149,524,NP,NPL,Népal,Nepal,AS
+149,150,528,NL,NLD,Pays-Bas,Netherlands,EU
+150,152,533,AW,ABW,Aruba,Aruba,SA
+151,153,540,NC,NCL,Nouvelle-Calédonie,New Caledonia,OC
+152,154,548,VU,VUT,Vanuatu,Vanuatu,OC
+153,155,554,NZ,NZL,Nouvelle-Zélande,New Zealand,OC
+154,156,558,NI,NIC,Nicaragua,Nicaragua,NA
+155,157,562,NE,NER,Niger,Niger,AF
+156,158,566,NG,NGA,Nigéria,Nigeria,AF
+157,159,570,NU,NIU,Niué,Niue,OC
+158,160,574,NF,NFK,Île Norfolk,Norfolk Island,OC
+159,161,578,NO,NOR,Norvège,Norway,EU
+160,162,580,MP,MNP,Îles Mariannes du Nord,Northern Mariana Islands,OC
+161,163,581,UM,UMI,Îles Mineures Éloignées des États-Unis,United States Minor Outlying Islands,OC
+162,164,583,FM,FSM,États Fédérés de Micronésie,Federated States of Micronesia,OC
+163,165,584,MH,MHL,Îles Marshall,Marshall Islands,OC
+164,166,585,PW,PLW,Palaos,Palau,OC
+165,167,586,PK,PAK,Pakistan,Pakistan,AS
+166,168,591,PA,PAN,Panama,Panama,NA
+167,169,598,PG,PNG,Papouasie-Nouvelle-Guinée,Papua New Guinea,OC
+168,170,600,PY,PRY,Paraguay,Paraguay,SA
+169,171,604,PE,PER,Pérou,Peru,SA
+170,172,608,PH,PHL,Philippines,Philippines,AS
+171,173,612,PN,PCN,Pitcairn,Pitcairn,OC
+172,174,616,PL,POL,Pologne,Poland,EU
+173,175,620,PT,PRT,Portugal,Portugal,EU
+174,176,624,GW,GNB,Guinée-Bissau,Guinea-Bissau,AF
+175,177,626,TL,TLS,Timor-Leste,Timor-Leste,OC
+176,178,630,PR,PRI,Porto Rico,Puerto Rico,NA
+177,179,634,QA,QAT,Qatar,Qatar,AS
+178,180,638,RE,REU,Réunion,Réunion,AF
+179,181,642,RO,ROU,Roumanie,Romania,EU
+180,182,643,RU,RUS,Fédération de Russie,Russian Federation,EU
+181,183,646,RW,RWA,Rwanda,Rwanda,AF
+182,184,654,SH,SHN,Sainte-Hélène,Saint Helena,AF
+183,185,659,KN,KNA,Saint-Kitts-et-Nevis,Saint Kitts and Nevis,NA
+184,186,660,AI,AIA,Anguilla,Anguilla,NA
+185,187,662,LC,LCA,Sainte-Lucie,Saint Lucia,NA
+186,188,666,PM,SPM,Saint-Pierre-et-Miquelon,Saint-Pierre and Miquelon,NA
+187,189,670,VC,VCT,Saint-Vincent-et-les Grenadines,Saint Vincent and the Grenadines,NA
+188,190,674,SM,SMR,Saint-Marin,San Marino,EU
+189,191,678,ST,STP,Sao Tomé-et-Principe,Sao Tome and Principe,AF
+190,192,682,SA,SAU,Arabie Saoudite,Saudi Arabia,AS
+191,193,686,SN,SEN,Sénégal,Senegal,AF
+192,194,690,SC,SYC,Seychelles,Seychelles,AF
+193,195,694,SL,SLE,Sierra Leone,Sierra Leone,AF
+194,196,702,SG,SGP,Singapour,Singapore,AS
+195,197,703,SK,SVK,Slovaquie,Slovakia,EU
+196,198,704,VN,VNM,Viet Nam,Vietnam,AS
+197,199,705,SI,SVN,Slovénie,Slovenia,EU
+198,200,706,SO,SOM,Somalie,Somalia,AF
+199,201,710,ZA,ZAF,Afrique du Sud,South Africa,AF
+200,202,716,ZW,ZWE,Zimbabwe,Zimbabwe,AF
+201,203,724,ES,ESP,Espagne,Spain,EU
+202,204,732,EH,ESH,Sahara Occidental,Western Sahara,AF
+203,205,736,SD,SDN,Soudan,Sudan,AF
+204,206,740,SR,SUR,Suriname,Suriname,SA
+205,207,744,SJ,SJM,Svalbard etÎle Jan Mayen,Svalbard and Jan Mayen,EU
+206,208,748,SZ,SWZ,Swaziland,Swaziland,AF
+207,209,752,SE,SWE,Suède,Sweden,EU
+208,210,756,CH,CHE,Suisse,Switzerland,EU
+209,211,760,SY,SYR,République Arabe Syrienne,Syrian Arab Republic,AS
+210,212,762,TJ,TJK,Tadjikistan,Tajikistan,AS
+211,213,764,TH,THA,Thaïlande,Thailand,AS
+212,214,768,TG,TGO,Togo,Togo,AF
+213,215,772,TK,TKL,Tokelau,Tokelau,OC
+214,216,776,TO,TON,Tonga,Tonga,OC
+215,217,780,TT,TTO,Trinité-et-Tobago,Trinidad and Tobago,SA
+216,218,784,AE,ARE,Émirats Arabes Unis,United Arab Emirates,AS
+217,219,788,TN,TUN,Tunisie,Tunisia,AF
+218,220,792,TR,TUR,Turquie,Turkey,AS
+219,221,795,TM,TKM,Turkménistan,Turkmenistan,AS
+220,222,796,TC,TCA,Îles Turks et Caïques,Turks and Caicos Islands,NA
+221,223,798,TV,TUV,Tuvalu,Tuvalu,OC
+222,224,800,UG,UGA,Ouganda,Uganda,AF
+223,225,804,UA,UKR,Ukraine,Ukraine,EU
+224,226,807,MK,MKD,L'ex-République Yougoslave de Macédoine,The Former Yugoslav Republic of Macedonia,EU
+225,227,818,EG,EGY,Égypte,Egypt,AF
+226,228,826,GB,GBR,Royaume-Uni,United Kingdom,EU
+227,229,833,IM,IMN,Île de Man,Isle of Man,EU
+228,230,834,TZ,TZA,République-Unie de Tanzanie,United Republic Of Tanzania,AF
+229,231,840,US,USA,États-Unis,United States,NA
+230,232,850,VI,VIR,Îles Vierges des États-Unis,U.S. Virgin Islands,NA
+231,233,854,BF,BFA,Burkina Faso,Burkina Faso,AF
+232,234,858,UY,URY,Uruguay,Uruguay,SA
+233,235,860,UZ,UZB,Ouzbékistan,Uzbekistan,AS
+234,236,862,VE,VEN,Venezuela,Venezuela,SA
+235,237,876,WF,WLF,Wallis et Futuna,Wallis and Futuna,OC
+236,238,882,WS,WSM,Samoa,Samoa,OC
+237,239,887,YE,YEM,Yémen,Yemen,AS
+238,241,894,ZM,ZMB,Zambie,Zambia,AF
+239,242,728,SS,SSD,Soudan du Sud," ""South Sudan""",AF
