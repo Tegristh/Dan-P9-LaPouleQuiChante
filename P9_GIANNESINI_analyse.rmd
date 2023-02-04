@@ -1,0 +1,602 @@
+---
+title: "P9-GIANNESINI-analyse"
+author: "GIANNESINI Baptiste"
+date: "28/11/2021"
+output:
+  html_document:
+    df_print: default
+    theme: readable
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+![](https://user.oc-static.com/upload/2020/11/24/16062164030098_image2.png)
+
+# Résumé de la mission:
+
+La poule qui chante, entreprise française d'agroalimentaire nous consulte pour déterminer un plan d'internationalisation de ses ventes.
+
+Après avoir nettoyé, préparé, et sélectionné les données, nous allons maintenant pouvoir passer à l'étape d'analyse.
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message = FALSE)
+
+#install.packages("heatmaply")
+library(tidyverse)
+library(ineq)
+library(scales)
+library(rAmCharts)
+library(kableExtra)
+library(crosstable)
+library(gmodels)
+library(FactoMineR)
+library(factoextra)
+library(corrplot)
+library(reshape2)
+library(ggpubr)
+library(parameters)
+library(see)
+library(NbClust)
+library(mclust)
+library(cluster)
+library(ape)
+library(ggdendro)
+library(plotly)
+library(reticulate)
+library(processx)
+library(heatmaply)
+```
+
+```{r}
+# Import des données
+
+data = read.csv("data.csv", sep=",", dec=".", header= TRUE, row.names = 1)
+data_fin = read.csv("data.csv", sep=",", dec=".")
+data_fin <- data_fin %>% 
+  select(-nb_habitant2017, -variation_absol)
+
+data.reduit = data[,0:9] %>%
+  select(-nb_habitant2017, -variation_absol) 
+  
+
+
+```
+
+
+
+
+# Matrice des corellations linéaires de pearson
+
+```{r}
+cormat <- round(cor(data.reduit),2)
+#head(cormat)
+
+# Obtenir le triangle inférieur
+get_lower_tri<-function(cormat){
+  cormat[upper.tri(cormat)] <- NA
+  return(cormat)
+}
+
+lower <- get_lower_tri(cormat)
+melted_cormat <- melt(lower, na.rm=TRUE)
+#head(melted_cormat)
+
+ggheatmap <- ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value))+
+  geom_tile(color="white")+
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = 0, limit = c(-1,1), space = "Lab",  name="Pearson\nCorrelation") +
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 8, hjust = 1))+
+  coord_fixed()
+  
+ ggheatmap +
+   geom_text(aes(Var1, Var2, label = value), color = "black", size = 4)+
+   coord_flip()
+  
+```
+
+Ce premier aperçu nous indique rapidement que:
+
+  - il existe une corrélation assez forte entre la disponibilité totale de protéines d'un pays et sa disponibilité totale, son PIB et son ratio de protéines d'origine animale
+  - la variation de population est moyennement anti-corrélée à la plupart des autres variables que nous avons choisi.
+  
+# Méthode de l'Analyse en Composantes Principales (ACP)
+
+## Principe
+
+![](https://miro.medium.com/max/1024/1*HWQvXoyc8nxR-zyW2Q6KYA.jpeg)
+
+
+L'Objectif de l'ACP est de condenser l'information contenu dans notre  tableau de variables.
+
+A cette fin, nous analysons les corrélations linéaires entre les variables et nous faisons une représentation graphique des distances entre individus.
+
+Cela nous permet de dégager des liaisons entre variables et des ressemblances entre individus.
+
+## representativité
+
+```{r}
+res.pca <- PCA(data.reduit, scale.unit = TRUE, graph=FALSE)
+var <- get_pca_var(res.pca)
+fviz_eig(res.pca, addlabels=TRUE, ylim=c(0,60))
+```
+
+ce graphique nous indique que **66.4% **de l'information est résumée sur les deux premières dimensions. 
+
+On pourrait passer à 77.4% en prenant en considération la 3 ème dimension.
+
+## correlations dimensionnelles
+
+```{r}
+corrplot(var$cos2, is.corr=FALSE)
+```
+
+Nous constatons ici que la 3eme dimension est principalement expliquée par une variable déjà incluse dans notre première dimension.
+
+Nous allons donc nous restreindre à l'étude des deux premières dimensions pour 66.4% de l'information.
+
+
+## Cercle des corellations Dim 1/2
+
+```{r}
+fviz_pca_var(res.pca, col.var = "cos2", gradient.cols=c("#00AFBB", "#E7B800", "#FC4E07"), repel=TRUE)
+
+# Dim 1 : disponibilité de protéines
+# Dim 2 : importation/auto suffisance
+```
+
+Nous constatons que la première dimension est **très fortement corrélée à la disponibilité totale de protéines**, ainsi que (disponibilité alimentaire et pib).
+
+La seconde dimension elle, **semble plutôt indiquer l'origine des protéines** entre import et auto_suffisance
+
+## variables contributives
+
+```{r}
+# Contributions des variables à PC1
+fviz_contrib(res.pca, choice = "var", axes = 1, top = 10)
+```
+
+Les variables d'interêt sur l'axe de composante primaire 1 sont la disonibilité de proteines totales, la disponibilité totale, le pib et le ratio de protéines d'origines animales. 
+
+La variation de population est très proche du seuil sans réussir à l'atteindre
+
+
+```{r}
+# Contributions des variables à PC2
+fviz_contrib(res.pca, choice = "var", axes = 2, top = 10)
+```
+
+Les variables d’intérêt sur le second axe de composantes primaires sont la part d'importation et l'auto suffisance
+
+```{r}
+# Contributions totales à PC1 et PC2
+fviz_cos2(res.pca, choice="var", axes= 1:2)
+
+```
+
+Cette visualisation nous montre le "poids" des différentes variables dans l'anayse.
+
+Sans surprise, les disponibilités, et origines de protéines ont plus d'importance que la variation de population.
+
+## Projection des individus
+
+```{r}
+fviz_pca_ind (res.pca, col.ind = "cos2",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE # Évite le chevauchement de texte
+             )
+```
+
+Ce graphique nous illustre le positionnement des pays "individus" les uns par rapport aux autres.
+
+## projection individus sur cercle correlation de variables
+
+
+```{r}
+fviz_pca_biplot(res.pca, repel = TRUE,
+                col.var = "red", # Couleur des variables
+                col.ind = "blue", # Couleur des individus en fonction du continent
+                #palette="uchicago",
+                addEllipses =FALSE, 
+                #ellipse.type="confidence",
+                mean=FALSE
+                )
+```
+
+Il est plus aisé de comprendre que les pays qui auront le plus d’intérêt pour nous seront situés sur la droite du graphique (pays riches dits développés), et plutôt sur le haut du graphique (pays importateurs de denrées)
+
+## classification manuelle des individus 
+
+```{r}
+fviz_pca_ind(res.pca,
+             #label = "none", # Caché le texte des individus
+             repel = TRUE,
+             col.ind = data$Continent, # colorer par groupes
+             addEllipses =TRUE,# Ellipses de concentration
+             mean.point =FALSE,
+             palette = "uchicago"
+             
+             
+            )
+```
+
+deux continents se détachent un peu du lot:
+
+  - L'Europe dont la majorité des pays sont sur la droite du graphe (pays riches, développés)
+  - L'Afrique qui se trouve quasi exclusivement dans la gauche du graphe (peu de disponibilité alimentaire, faible PIB -> pays pauvre)
+  
+Cependant les fortes disparités d'auto suffisance et d'importation, ainsi que pour le niveau de richesse / développement des pays au sein d'un même continent nous  empêchent de choisir un continent comme groupe de pays cibles.
+
+```{r, include=FALSE}
+fviz_pca_ind (res.pca, pointsize = "cos2",
+             pointshape = 21, fill = "#E7B800",
+             repel = TRUE # Évite le chevauchement de texte
+             )
+```
+
+Nous utiliserons les résultats de l'ACP pour regrouper des pays en fin de document après avoir mis en pratique une autre méthode de "classification".
+
+
+# Méthode des K-Means
+
+On utilise ici un des algorithmes de clustering les plus répandus.
+
+Il permet d'analyser un jeu de données afin de regrouper les individus similaires en groupes (ou clusters)
+
+## Determination du nombre de clusters
+
+La première chose à faire est de calculer le bon nombre de groupes pour trier nos individus. Il existe de nombreuses méthodes pour déterminer ce nombre de groupes idéal.
+
+```{r}
+# Silhouette method
+fviz_nbclust(data.reduit, kmeans, method = "silhouette") +
+  labs(subtitle = "Silhouette method")
+```
+
+La méthode Silhouette de détermination du nombre idéal de cluster nous propose deux groupes.
+
+Pour notre usage, deux groupes seront certainement insuffisants, nous risquerions de nous retrouver avec une classification "pays riche" / "pays pauvre".
+
+
+```{r}
+fviz_nbclust(data.reduit, kmeans, method = "wss") +
+  geom_vline(xintercept = 4, linetype = 2) + # add line for better visualisation
+  labs(subtitle = "Elbow method")
+```
+
+La méthode du coude elle, nous recommande 4 groupes ce qui devrait nous permettre de mieux trier les pays.
+
+
+
+Nous allons vérifier la représentativité de notre méthode en fonction du nombre de clusters
+
+```{r}
+# calcul représentativité du kmeans
+# Avec deux clusters
+res.km <- kmeans(scale(data.reduit),2 )
+BSS <- res.km$betweenss
+TSS <- res.km$totss
+repres2 <- round(BSS/TSS*100, digits=2)
+#repres2
+
+#avec 4 clusters 
+set.seed(2)
+res.km <- kmeans(scale(data.reduit),4  )
+BSS <- res.km$betweenss
+TSS <- res.km$totss
+repres4 <- round(BSS/TSS*100, digits=2)
+#repres4
+```
+
+Résultats de représentativité en %:
+
+représentativité = ((somme des carrés internes) /(somme des carrés total)) X 100
+(higher the better)
+
+  - 2 clusters : **`r repres2` %**
+  - 4 clusters : **`r repres4` %**
+
+Nous allons donc continuer notre étude en considérant 4 groupes ou "clusters"
+
+
+
+
+
+```{r, include=FALSE}
+df2 = data.frame(res.km$centers)
+df2<- df2 %>% 
+  mutate(cluster=rownames(df2))
+
+#df2
+
+```
+
+## Zmean toutes variables
+
+Voici une représentation globale des moyennes de chaque variable pour chaque groupe de pays. 
+
+ce graphique nous permet d'interpréter les différences entre les groupes afin de choisir vers quel groupe de pays nous tourner.
+
+
+```{r}
+Zmean <- df2%>%
+  gather(total, value, -cluster)
+#df2
+ggplot(Zmean, aes(x=cluster ,y=value, fill=total))+
+  geom_bar( stat="identity", position=position_dodge())
+```
+
+A la lecture de ce graphe, il semblerait que nos groupes correspondent:
+
+  - cluster 1: pays très faible dispo alimentaire et très dépendants des importations 
+  - cluster 2: pays très faible dispo alimentaire et forte variation de population 
+  - cluster 3: pays dispo alimentaire issue de l'industrie locale
+  - cluster 4: pays très forte dispo alimentaire issue d'industries locales et d'importations
+  
+Nous allons regarder chaque variable de plus près.
+
+## Importations
+
+```{r}
+ggplot(df2, aes(x=cluster, y=part_Import, fill=cluster))+
+  geom_bar(stat="identity", position=position_dodge2())
+```
+
+Les clusters les plus importateurs sont le 1 et le 4
+
+## Auto suffisance
+
+```{r}
+ggplot(df2, aes(x=cluster, y=auto_suff, fill=cluster))+
+  geom_bar(stat="identity", position=position_dodge2())
+```
+
+Les clusters avec l'industrie la plus développée sont les 3 et 4
+
+## PIB par habitant
+
+```{r}
+ggplot(df2, aes(x=cluster, y=pib_hab, fill=cluster))+
+  geom_bar(stat="identity", position=position_dodge2())
+```
+
+Le cluster le plus riche et de très loin est le cluster 4
+
+## Variations de population
+
+```{r}
+ggplot(df2, aes(x=cluster, y=variation_pop, fill=cluster))+
+  geom_bar(stat="identity", position=position_dodge2())
+```
+
+La variation de population positive ou négative indique une instabilité (guerre, période de développement du pays etc...)
+
+Nous devons privilégier les pays avec une faible variation de population  comme 1 et 4
+
+## Disponibilité tous aliments
+
+```{r}
+ggplot(df2, aes(x=cluster, y=Disponibilite_totale, fill=cluster))+
+  geom_bar(stat="identity", position=position_dodge2())
+```
+
+Les pays ou l'alimentation est la plus disponible sont dans les groupes 3 et 4
+
+## Disponibilité Protéines toutes origines
+
+```{r}
+ggplot(df2, aes(x=cluster, y=Dispo_proteines_total, fill=cluster))+
+  geom_bar(stat="identity", position=position_dodge2())
+```
+
+Les pays les plus consommateurs de protéines sont les groupes 3 et 4
+
+## Ratio protéines origine animale
+
+```{r}
+ggplot(df2, aes(x=cluster, y=ratio_animal_prot, fill=cluster))+
+  geom_bar(stat="identity", position=position_dodge2())
+```
+
+Les pays dont la part animale est la plus élevée dans le total de proteines sont dans les groupes 1 et 4
+
+
+```{r, include=FALSE}
+ggplot(df2, aes(x=cluster, y=Dispo_proteines_total, fill=cluster))+
+  geom_bar(stat="identity", position=position_dodge2())
+```
+
+D'un point de vue exportation, il parait pertinent de se concentrer en priorité vers les pays: 
+
+  - stables et à l'économie suffisante (pib, disponibilité alimentaires et variation de population)
+  - habitués à l'importation (part importation élevée)
+
+Les clusters :
+  - 1 et 2 contiennent des pays pauvres, consommant peu de proteines animales et ne sont pas un bon choix pour l'importation de volaille.
+  - 3 contient des pays un peu plus riches, consommant plus habituellement des proteines animales, mais très autonomes dans leur production.
+  - 4 contient les pays les plus riches dont la production ne suffit pas toujours à combler les besoins, ils sont la meilleure cible pour l'importation de volaille.
+
+
+# Clustering agglomératif hiérarchique (ou Agglomerative Hierarchical Clustering)
+
+## principe
+
+C'est une méthode d'analyse qui cherche à construire une hiérarchie de groupes (ou clusters) sous la forme d'une structure arborescente.
+
+## Classification issue de l'ACP
+```{r}
+res.hcpc <- HCPC(res.pca, nb.clust=4, order=TRUE, method="ward", graph=FALSE)
+p1 <- fviz_dend(res.hcpc, horiz=TRUE)
+ggplotly(p1)
+```
+
+
+```{r}
+df <- scale(data.reduit)
+#heatmap <- heatmap(df, scale = "none",cutree_rows = 4)
+
+test <- heatmaply(df,
+        #xlab = "", ylab = "", 
+        #main = "",
+        #scale = "none",
+        #margins = c(60,100,40,20),
+        #grid_color = "white",
+        #grid_size = 0.0001,
+        grid_width = 0.001,
+        #titleX = FALSE,
+        hide_colorbar = FALSE,
+        branches_lwd = 0.1,
+        #label_names = c("Country", "Feature:", "Value"),
+        fontsize_row =5, fontsize_col = 5
+        #labCol = colnames(df)
+        #labRow = rownames(df),
+        #heatmap_layers = theme(axis.line=element_blank())
+        )
+#test
+```
+
+cette classification des pays issu de l'ACP nous propose un découpage des pays en 4 clusters.
+
+```{r}
+fviz_cluster(res.hcpc, repel=TRUE)
+```
+
+Tenant compte du fait que nous voulons les pays les plus "en haut à droite" de l'ACP, le cluster 4 en violet semble le plus pertinent.
+
+## Classification issue du Kmeans
+
+```{r, include=FALSE}
+clusters = data.frame(res.km$cluster) 
+clusters <- clusters%>% 
+  mutate(Zone=rownames(clusters), Cluster=res.km.cluster) %>% 
+  select(Zone, Cluster)
+clusters
+```
+
+```{r}
+hclust <- hclust(dist(df2), method="complete")
+plot(hclust)
+```
+
+CLassification entre clusters.
+
+```{r, include=FALSE}
+hclust <- hclust(dist(clusters), method="complete")
+p<-ggdendrogram((hclust), horiz=TRUE)
+ggplotly(p)
+```
+
+Classification des individus dans chaque cluster
+
+```{r}
+# clusters Kmeans
+fviz_cluster(res.km, data.reduit,repel = TRUE, ellipse.type = "convex")
+```
+
+Visualisation des clusters issus du Kmean nous montre une disposition des pays très similaires aux résultats de l'ACP
+
+```{r}
+clustered_data <- merge(data_fin, clusters, on=Zone)
+```
+
+```{r, cache=FALSE}
+fig <- plot_ly(clustered_data, type='choropleth', locations=clustered_data$alpha.3, z=clustered_data$Cluster, text=clustered_data$Zone)
+fig
+```
+
+
+
+Cette projection des clusters sur la mappemonde nous permet de mieux visualiser les pays de chaque cluster.
+
+
+```{r}
+kable(head(clustered_data %>% filter(Cluster==1)), caption="5 pays cluster 1")%>%
+    kable_styling(bootstrap_options = "basic", full_width = F, position = "left") %>% 
+        row_spec(1:6, color="white", background="#F8766D")
+
+```
+
+```{r}
+kable(head(clustered_data %>% filter(Cluster==2)), caption="5 pays cluster 2")%>%
+   kable_styling(bootstrap_options = "basic", full_width = F, position = "left") %>% 
+        row_spec(1:6, color="white", background="#7CAE00")
+
+```
+
+```{r}
+kable(head(clustered_data %>% filter(Cluster==3)), caption="5 pays cluster 3")%>%
+   kable_styling(bootstrap_options = "basic", full_width = F, position = "left") %>% 
+        row_spec(1:6, color="white", background="#00BFC4")
+
+```
+
+```{r}
+kable(head(clustered_data %>% filter(Cluster==4)), caption="5 pays cluster 4")%>%
+   kable_styling(bootstrap_options = "basic", full_width = F, position = "left") %>% 
+        row_spec(1:6, color="white", background="#C77CFE")
+
+```
+
+
+# Conclusions
+
+![](https://c.tenor.com/8zExTwQXh-MAAAAC/kaamelott-kadoc.gif)
+
+Une grande part des pays de ce groupe étant Européens, Il est certainement pertinent de les privilégier afin de profiter d'accord politiques et commerciaux bien établis.
+
+## Europe:
+
+```{r}
+#cluster_4_europe <- cluster_4 %>% 
+#  filter(Continent=="Europe")
+kable(clustered_data %>% filter(Cluster==4 & Continent=="Europe") %>% arrange(desc(by_group = pib_hab)), caption="pays europeens cluster 4")%>%
+   kable_styling(bootstrap_options = "striped") %>% 
+   row_spec(1:3, color="white", background="#C77CFE")%>%
+   row_spec(4:15, color="black", background="#E4D5EF")
+
+```
+
+En triant les pays par PIB/Habitant le trio Luxembourg, Suisse et Norvège s'impose.
+
+## Hors Europe:
+
+
+
+```{r}
+kable(clustered_data %>% filter(Cluster==4 & Continent!="Europe") %>% arrange(desc(by_group = pib_hab)), caption="pays non europeens cluster 4")%>%
+   kable_styling(bootstrap_options = "condensed") %>% 
+  row_spec(1:3, color="white", background="#C77CFE")%>%
+   row_spec(4:9, color="black", background="#E4D5EF")
+```
+
+
+
+
+```{r, include=FALSE}
+res_kmeans <- cluster_analysis(data.reduit, n=4, method= "kmeans")
+predict(res_kmeans)
+plot(res_kmeans)
+```
+
+```{r, include==FALSE}
+#sil <- silhouette(res.km$cluster, dist(data.reduit))
+#fviz_silhouette(sil)
+```
+
+```{r, include=FALSE}
+#data2 <- rownames(data)=="Hong-Kong"
+#data2
+```
+```{r, include=FALSE}
+d <- dist(data.reduit, method="euclidean")
+hc1 <- hclust(d, method="complete")
+colors=  c("red", "blue", "green", "black")
+clus4 = cutree(hc1,4)
+p <- ggdendrogram(hc1, rotate=TRUE, size=5)
+ggplotly(p)
+```
+```{r}
+warnings()
+```
+

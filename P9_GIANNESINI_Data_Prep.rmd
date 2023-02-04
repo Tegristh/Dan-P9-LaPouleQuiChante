@@ -1,0 +1,370 @@
+---
+title: "P9_GIANNESINI_Data_Prep"
+author: "GIANNESINI Baptiste"
+date: "28/11/2021"
+output:
+  html_document:
+    df_print: default
+    theme: readable
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+![](https://user.oc-static.com/upload/2020/11/24/16062164030098_image2.png)
+
+# Résumé de la mission:
+
+La poule qui chante, entreprise française d'agroalimentaire nous consulte pour déterminer un plan d'internationalisation de ses ventes.
+
+La première étape pour mener à bien la mission qui nous as été confiée, est de nettoyer, préparer et sélectionner les données.
+Dans un second temps et dans un second fichier, nous mènerons des analyses sur les données issues de notre préparation.
+
+
+
+```{r setup, include=FALSE}
+# Import des packages
+
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message = FALSE)
+
+#install.packages('cluster')
+library(tidyverse)
+library(kableExtra)
+```
+
+Après avoir importé les librairies de gestion de DataFrames, nous importons les données fournies ainsi que d'autres qui nous ont paru pertinentes.
+
+```{r}
+# Import des données
+
+# dispo alim contiens les informations de disponibilité alimentaire pour l'année 2017
+dispo_alim = read.csv("DisponibiliteAlimentaire_2017.csv", sep=",", fileEncoding="UTF-8-BOM")
+
+# population contiens les données démographiques des pays de l'an 2000 à 2018
+population = read.csv("Population_2000_2018.csv", sep=",", fileEncoding="UTF-8-BOM")
+
+# pib contiens les informations de PIB en $ pour tous les pays en 2017
+pib = read.csv("PIB.csv", sep=",", fileEncoding="UTF-8-BOM")
+
+# iso est un csv de création personnelle qui contient entre autre choses le code iso alphanumérique et le continent pour chaque pays
+iso = read.csv("iso_def.csv", sep=",", fileEncoding = "UTF-8-BOM", na.strings = "?")
+```
+
+# Première exploration rapide des données.
+
+## fichier iso:
+
+fichier de création personnelle
+
+```{r}
+kable(head(iso), caption="head - iso")%>%
+   kable_styling(bootstrap_options = "striped")
+
+```
+
+Les colonnes qui nous intéressent ici sont : "nom_fr" et "Continent"
+
+## fichier pib:
+
+source site faostat "mettre le lien"
+
+```{r}
+kable(head(pib), caption="head - pib")%>%
+   kable_styling(bootstrap_options = "striped")
+
+```
+
+Les colonnes qui nous intéressent ici sont : "Zone" et "Valeur"
+
+## fichier population:
+
+Fourni par l'entreprise
+
+```{r}
+kable(head(population), caption="head - population")%>%
+   kable_styling(bootstrap_options = "striped")
+
+```
+
+Les colonnes qui nous intéressent ici sont : "Zone", "Valeur" et "Annee"
+Nous nous en servirons pour extraire le nombre d'habitants par pays en 2012 et 2017 afin de calculer la variation de population sur 5 années.
+
+## fichier dispo_alim:
+
+fourni par l'entreprise 
+
+```{r}
+kable(head(dispo_alim), caption="head - dispo_alim")%>%
+   kable_styling(bootstrap_options = "striped")
+```
+
+Les colonnes qui nous interessent ici sont les colonnes: "Zone", "Valeur", "Element" et "Produit"
+
+regardons de plus près ces derniers:
+
+```{r}
+kable(dispo_alim %>% summarize (Elements = unique(Element)),caption="Elements dans dispo_alim")%>%
+   kable_styling(bootstrap_options = "striped") 
+```
+
+Les "Element" qui nous intéressent sont: 
+
+  - Production
+  - Importation - Quantité
+  - Exportation - Quantité
+  - Disponibilité alimentaire (Kcal/personne/jour)
+  - Disponibilité de protéines en quantité (g/personne/jour)
+  
+```{r}
+kable(dispo_alim %>% summarize (produits = unique(Produit)),caption="Produits dans dispo_alim")%>%
+   kable_styling(bootstrap_options = "striped") 
+```
+
+Nous aurons besoin de distinguer les produits d'origine animale:
+
+  - Viande de Bovins 
+  - Viande d'Ovins/Caprins 
+  - Viande de Suides 
+  - Viande de Volailles 
+  - Viande, Autre 
+  - Abats Comestible 
+  - Oeufs
+  - Poissons Eau Douce
+  - perciform
+  - Poissons Pelagique
+  - Poissons Marins, Autres
+  - Crustacés
+  - Cephalopodes
+  - Mollusques, Autres
+  - Animaux Aquatiques Autre
+  - Viande de Anim Aquatiq
+  
+# Préparation des données:
+
+## population:
+
+Nous voulons obtenir nombre d'habitants ainsi que le % de variation de population sur 5 ans en fonction du pays:
+
+```{r}
+# récupération population 2017
+
+pop_2017 <- population %>%
+  mutate(nb_habitant2017 = Valeur *1000)%>%
+  filter(Annee == 2017) %>%
+  select(Zone, nb_habitant2017)
+
+# récupération population 2012
+
+pop_2012 <- population %>%
+  mutate(nb_habitant2012 = Valeur *1000)%>%
+  filter(Annee == 2012) %>%
+  select(Zone, nb_habitant2012)
+
+# jointure et calcul variation de population 5 ans
+
+pop <- merge(pop_2017, pop_2012, on=Zone)%>%
+  mutate(variation_pop = ((nb_habitant2017-nb_habitant2012)/nb_habitant2012)*100, variation_absol = sqrt((variation_pop**2))) %>%
+  select(Zone, 
+         nb_habitant2017,  
+         variation_pop, 
+         variation_absol)
+
+kable(head(pop), caption="head - sortie table pop")%>%
+   kable_styling(bootstrap_options = "striped") 
+```
+
+## PIB
+
+Nous récupérons uniquement le PIB par pays.
+
+```{r}
+# mise en forme pib/habitant en $
+
+pib <- pib %>%
+  mutate(pib_hab = Valeur)%>%
+  select(Zone, 
+         pib_hab)
+kable(head(pib), caption="head - pib")%>%
+   kable_styling(bootstrap_options = "striped") 
+```
+
+## Disponibilité totale alimentaire en Kcal/personne/jour
+
+```{r}
+# Récupération dispo alimentaire total en Kcal/habitant
+
+dispo_tot_kcal <- dispo_alim %>%
+  group_by(Zone)%>%
+  filter(Element == "Disponibilité alimentaire (Kcal/personne/jour)")%>%
+  summarize(Disponibilite_totale = sum(Valeur))
+
+kable(head(dispo_tot_kcal), caption="head - dispo tot Kcal")%>%
+   kable_styling(bootstrap_options = "striped") 
+```
+
+## Protéines
+
+On cherche ici à récupérer la disponibilité totale de protéines dans le pays (toute sources confondues), ainsi que le ratio d'origine animale.
+
+```{r}
+# récupération total de protéines toutes origines en g/jour/habitant
+
+total_prot <- dispo_alim %>%
+  group_by(Zone)%>%
+  filter(Element=="Disponibilité de protéines en quantité (g/personne/jour)")%>%
+  summarize(Dispo_proteines_total = sum(Valeur))
+
+# récupération total de protéines toutes origines animales
+
+animal_prot = dispo_alim %>%
+  group_by(Zone)%>%
+  filter(Element=="Disponibilité de protéines en quantité (g/personne/jour)" & Produit %in% c(
+    "Viande de Bovins", 
+    "Viande d'Ovins/Caprins", 
+    "Viande de Suides", 
+    "Viande de Volailles", 
+    "Viande, Autre", 
+    "Abats Comestible", 
+    "Oeufs",
+    "Poissons Eau Douce",
+    "perciform",
+    "Poissons Pelagique",
+    "Poissons Marins, Autres",
+    "Crustacés",
+    "Cephalopodes",
+    "Mollusques, Autres",
+    "Animaux Aquatiques Autre",
+    "Viande de Anim Aquatiq"))%>%
+  summarize(Dispo_proteines_animal = sum(Valeur))
+
+# Calcul part animale dans le total prot
+
+prot <- merge(total_prot, animal_prot, on=Zone)%>%
+  mutate(ratio_animal_prot = round(Dispo_proteines_animal/Dispo_proteines_total, digits=2))%>%
+  select(-Dispo_proteines_animal, 
+         Dispo_proteines_total)
+
+kable(head(prot), caption="head - dispo/ratio prot")%>%
+   kable_styling(bootstrap_options = "striped") 
+```
+
+## Volaille
+
+Nous allons récupérer les informations de production, import et export de volaille afin d'en déduire:
+
+  - La disponibilité intérieure (dispo = production + import - export)
+  - la part d'import ( part_Import = import/dispo )
+  - l'auto suffisance ( auto_suff = production/dispo )
+
+```{r}
+# Production Volaille
+V_prod = dispo_alim %>%
+  group_by(Zone)%>%
+  filter(Element =="Production" & Produit == "Viande de Volailles")%>%
+  summarize(v_production = sum(Valeur))
+
+# Importation Volaille
+V_import <- dispo_alim %>%
+  group_by(Zone)%>%
+  filter(Element=="Importations - Quantité" & Produit == "Viande de Volailles")%>%
+  summarize(v_importations = sum(Valeur))
+
+# Exportation Volaille
+V_export = dispo_alim %>%
+  group_by(Zone)%>%
+  filter(Element=="Exportations - Quantité" & Produit == "Viande de Volailles")%>%
+  summarize(v_exportation = sum(Valeur))
+
+# récupération et calcul de données spécifiques à la volaille
+dispo_volaille <- merge(V_prod, V_import, on=Zone, all=TRUE)
+dispo_volaille <- merge(dispo_volaille, V_export, on=Zone, all = TRUE) %>%
+  replace(is.na(.),0) %>%
+  mutate(dispo = (v_production+(v_importations-v_exportation)), 
+         part_Import=(v_importations/dispo), 
+         auto_suff = (v_production/dispo))
+
+kable(head(dispo_volaille), caption="head - dispo volailles")%>%
+   kable_styling(bootstrap_options = "striped") 
+```
+
+J'ai choisi de faire la synthèse de l'import, export, production et dispo intérieure par les ratio "part_Import" et "auto_suff", je les extrait donc dans une nouvelle table
+
+```{r}
+ratios <- dispo_volaille %>%
+  select(-v_production, 
+         -v_importations, 
+         -v_exportation, 
+         -dispo)
+
+kable(head(ratios), caption="head - ratios prot")%>%
+   kable_styling(bootstrap_options = "striped") 
+```
+
+## Continent
+
+Pour compléter les informations nous allons récupérer les continents dans la table iso
+
+```{r}
+continent <- iso %>%
+  mutate(Zone=nom_fr)%>%
+  select(Zone, alpha.3, Continent)
+kable(head(continent), caption="head - pays/continent")%>%
+   kable_styling(bootstrap_options = "striped")
+```
+
+
+# Tableau Final:
+
+Il faut maintenant faire les jointures consécutives afin de rassembler toutes les données en un  seul dataframe.
+
+```{r}
+# jointure pop et pib
+data <- merge(pop, pib, on=Zone)
+# + dispo totale
+data <- merge(data, dispo_tot_kcal, on= Zone)
+# + prot
+data <- merge(data, prot, on=Zone, all=TRUE)
+# + ratios
+data <- merge(data, ratios, on=Zone, all=TRUE)
+# élimination des lignes avec des NA
+data <- data%>% drop_na()
+
+#compatibilité entre nom de pays de data et de iso:
+data$Zone=ifelse(data$Zone=="Arabie saoudite","Arabie Saoudite",data$Zone)
+data$Zone=ifelse(data$Zone=="Bolivie (État plurinational de)","Bolivie",data$Zone)
+data$Zone=ifelse(data$Zone=="Cabo Verde","Cap-vert",data$Zone)
+data$Zone=ifelse(data$Zone=="Chine - RAS de Hong-Kong","Hong-Kong",data$Zone)
+data$Zone=ifelse(data$Zone=="Chine - RAS de Macao","Macao",data$Zone)
+data$Zone=ifelse(data$Zone=="Chine, continentale","Chine",data$Zone)
+data$Zone=ifelse(data$Zone=="Chine, Taiwan Province de","Taïwan",data$Zone)
+data$Zone=ifelse(data$Zone=="Congo","République du Congo",data$Zone)
+data$Zone=ifelse(data$Zone=="Émirats arabes unis","Émirats Arabes Unis",data$Zone)
+data$Zone=ifelse(data$Zone=="Eswatini","Swaziland",data$Zone)
+data$Zone=ifelse(data$Zone=="États-Unis d'Amérique","États-Unis",data$Zone)
+data$Zone=ifelse(data$Zone=="Iran (République islamique d')","République Islamique d'Iran",data$Zone)
+data$Zone=ifelse(data$Zone=="Macédoine du Nord","L'ex-République Yougoslave de Macédoine",data$Zone)
+data$Zone=ifelse(data$Zone=="Monténégro","Monténégro",data$Zone)
+data$Zone=ifelse(data$Zone=="Polynésie française","Polynésie Française",data$Zone)
+data$Zone=ifelse(data$Zone=="République centrafricaine","République Centrafricaine",data$Zone)
+data$Zone=ifelse(data$Zone=="République démocratique populaire lao","République Démocratique Populaire Lao",data$Zone)
+data$Zone=ifelse(data$Zone=="République dominicaine","République Dominicaine",data$Zone)
+data$Zone=ifelse(data$Zone=="République populaire démocratique de Corée","République Populaire Démocratique de Corée",data$Zone)
+data$Zone=ifelse(data$Zone=="Royaume-Uni de Grande-Bretagne et d'Irlande du Nord","Royaume-Uni",data$Zone)
+data$Zone=ifelse(data$Zone=="Serbie","République de Serbie",data$Zone)
+data$Zone=ifelse(data$Zone=="Tchéquie","République Tchèque",data$Zone)
+data$Zone=ifelse(data$Zone=="Venezuela (République bolivarienne du)","Venezuela",data$Zone)
+
+# jointure + continent
+data <- merge(data, continent, on=Zone, all.x =TRUE)
+
+
+kable(head(data), caption="head - data")%>%
+   kable_styling(bootstrap_options = "striped")
+```
+
+Export du dataframe pour analyse
+
+```{r, echo=TRUE}
+write.csv(data,"data.csv", row.names = FALSE)
+```
+
